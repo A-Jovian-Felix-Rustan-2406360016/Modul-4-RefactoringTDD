@@ -11,11 +11,10 @@ import java.util.List;
 @Controller
 @RequestMapping("/product")
 public class ProductController {
-    @Autowired
-    private final ProductService service;
+    private final ProductService productService;
 
     public ProductController(ProductService service) {
-        this.service = service;
+        this.productService = service;
     }
 
     @GetMapping("/create")
@@ -27,33 +26,33 @@ public class ProductController {
 
     @PostMapping("/create")
     public String createProductPost(@ModelAttribute Product product, Model model) {
-        service.create(product);
+        productService.create(product);
         return "redirect:list";
     }
 
     @GetMapping("/list")
     public String productListPage(Model model) {
-        List<Product> allProducts = service.findAll();
+        List<Product> allProducts = productService.findAll();
         model.addAttribute("products", allProducts);
         return "ProductList";
     }
 
     @GetMapping("/edit/{productId}")
     public String editProductPage(@PathVariable String productId, Model model) {
-        Product product = service.findById(productId);
+        Product product = productService.findById(productId);
         model.addAttribute("product", product);
         return "EditProduct";
     }
 
     @PostMapping("/edit")
     public String editProductPost(@ModelAttribute Product product) {
-        service.edit(product);
+        productService.edit(product);
         return "redirect:list";
     }
     
     @GetMapping("/delete/{productId}")
     public String deleteProduct(@PathVariable String productId) {
-        service.delete(productId);
+        productService.delete(productId);
         return "redirect:/product/list";
     }
 }
