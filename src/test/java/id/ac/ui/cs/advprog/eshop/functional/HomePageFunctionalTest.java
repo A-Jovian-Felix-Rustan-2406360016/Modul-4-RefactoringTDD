@@ -30,7 +30,7 @@ class HomePageFunctionalTest {
     }
 
     @Test
-    void pageTitle_isCorrect(ChromeDriver driver) {
+    void pageTitle_isCorrect(ChromeDriver driver) throws Exception {
         driver.get(baseUrl);
         String pageTitle = driver.getTitle();
 
@@ -38,7 +38,7 @@ class HomePageFunctionalTest {
     }
 
     @Test
-    void welcomeMessage_homePage_isCorrect(ChromeDriver driver) {
+    void welcomeMessage_homePage_isCorrect(ChromeDriver driver) throws Exception {
         driver.get(baseUrl);
         String welcomeMessage = driver.findElement(By.tagName("h3")).getText();
         assertEquals("Welcome", welcomeMessage);
