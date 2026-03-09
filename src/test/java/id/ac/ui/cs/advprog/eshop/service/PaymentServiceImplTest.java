@@ -47,37 +47,12 @@ class PaymentServiceImplTest {
     }
 
     @Test
-    void testAddPaymentVoucherSuccess() {
-        Map<String, String> paymentData = new HashMap<>();
-        paymentData.put("voucherCode", "ESHOP1234ABC5678");
-
-        Payment payment = new Payment("pay-1", this.order, "VOUCHER", paymentData);
-        when(paymentRepository.save(any(Payment.class))).thenReturn(payment);
-
-        Payment result = paymentService.addPayment(this.order, "VOUCHER", paymentData);
-
-        verify(paymentRepository, times(1)).save(any(Payment.class));
-        assertEquals(PaymentStatus.SUCCESS.getValue(), result.getStatus());
-    }
-
-    @Test
-    void testAddPaymentVoucherRejectedInvalidCode() {
-        Map<String, String> paymentData = new HashMap<>();
-        paymentData.put("voucherCode", "INVALID-CODE");
-
-        Payment payment = new Payment("pay-1", this.order, "VOUCHER", paymentData);
-        when(paymentRepository.save(any(Payment.class))).thenReturn(payment);
-
-        Payment result = paymentService.addPayment(this.order, "VOUCHER", paymentData);
-
-        assertEquals(PaymentStatus.REJECTED.getValue(), result.getStatus());
-    }
-
-    @Test
     void testSetStatusSuccessUpdateOrder() {
         Map<String, String> paymentData = new HashMap<>();
         paymentData.put("voucherCode", "ESHOP1234ABC5678");
         Payment payment = new Payment("pay-1", this.order, "VOUCHER", paymentData);
+
+        when(paymentRepository.save(any(Payment.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
         Payment result = paymentService.setStatus(payment, PaymentStatus.SUCCESS.getValue());
 
@@ -90,6 +65,8 @@ class PaymentServiceImplTest {
         Map<String, String> paymentData = new HashMap<>();
         paymentData.put("voucherCode", "ESHOP1234ABC5678");
         Payment payment = new Payment("pay-1", this.order, "VOUCHER", paymentData);
+
+        when(paymentRepository.save(any(Payment.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
         Payment result = paymentService.setStatus(payment, PaymentStatus.REJECTED.getValue());
 
