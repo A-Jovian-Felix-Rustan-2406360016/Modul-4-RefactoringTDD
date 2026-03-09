@@ -21,27 +21,26 @@ public class PaymentServiceImpl implements PaymentService {
     public Payment addPayment(Order order, String method, Map<String, String> paymentData) {
         Payment payment = new Payment(UUID.randomUUID().toString(), order, method, paymentData);
 
-        if (method.equals("VOUCHER")) {
-            String voucherCode = paymentData.get("voucherCode");
-            if (isValidVoucher(voucherCode)) {
-                payment.setStatus(PaymentStatus.SUCCESS.getValue());
-            } else {
-                payment.setStatus(PaymentStatus.REJECTED.getValue());
-            }
-        }
-        else if (method.equals("BANK_TRANSFER")) {
-            String bankName = paymentData.get("bankName");
-            String referenceCode = paymentData.get("referenceCode");
-            if (bankName != null && !bankName.isBlank() &&
-                    referenceCode != null && !referenceCode.isBlank()) {
-                payment.setStatus(PaymentStatus.SUCCESS.getValue());
-            } else {
-                payment.setStatus(PaymentStatus.REJECTED.getValue());
-            }
-        }
+        boolean isValid = isPaymentValid(method, paymentData);
+
+        payment.setStatus(isValid ? PaymentStatus.SUCCESS.getValue() : PaymentStatus.REJECTED.getValue());
 
         updateOrderStatus(payment);
         return paymentRepository.save(payment);
+    }
+
+    private boolean isPaymentValid(String method, Map<String, String> paymentData) {
+        if (method.equals("VOUCHER")) {
+            return isValidVoucher(paymentData.get("voucherCode"));
+        } else if (method.equals("BANK_TRANSFER")) {
+            return isValidBankTransfer(paymentData.get("bankName"), paymentData.get("referenceCode"));
+        }
+        return false;
+    }
+
+    private boolean isValidBankTransfer(String bankName, String referenceCode) {
+        return bankName != null && !bankName.isBlank() &&
+                referenceCode != null && !referenceCode.isBlank();
     }
 
     private boolean isValidVoucher(String code) {
