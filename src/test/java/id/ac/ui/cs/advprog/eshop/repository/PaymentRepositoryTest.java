@@ -20,9 +20,13 @@ class PaymentRepositoryTest {
     @BeforeEach
     void setUp() {
         paymentRepository = new PaymentRepository();
-        payments = new ArrayList<>();
-
         List<Product> products = new ArrayList<>();
+        Product product = new Product();
+        product.setProductId("eb558e9f-1c39-460e-8860-71af6af63bd6");
+        product.setProductName("Sampo Cap Bambang");
+        product.setProductQuantity(2);
+        products.add(product);
+
         Order order = new Order("13652556-012a-4c07-b546-54eb1396d79b",
                 products, 1708560000L, "Safira Sudrajat");
 
@@ -30,10 +34,11 @@ class PaymentRepositoryTest {
         paymentData.put("voucherCode", "ESHOP1234ABC5678");
 
         Payment payment1 = new Payment("pay-1", order, "VOUCHER", paymentData);
-        payments.add(payment1);
+        Payment payment2 = new Payment("pay-2", order, "BANK_TRANSFER", paymentData);
 
-        Payment payment2 = new Payment("pay-2", order, "BANK", paymentData);
-        payments.add(payment2);
+        this.payments = new ArrayList<>();
+        this.payments.add(payment1);
+        this.payments.add(payment2);
     }
 
     @Test
