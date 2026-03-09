@@ -73,4 +73,31 @@ class PaymentServiceImplTest {
         assertEquals(PaymentStatus.REJECTED.getValue(), result.getStatus());
         assertEquals(OrderStatus.FAILED.getValue(), this.order.getStatus());
     }
+
+    @Test
+    void testAddPaymentVoucherSuccess() {
+        Map<String, String> paymentData = new HashMap<>();
+        paymentData.put("voucherCode", "ESHOP1234ABC5678");
+
+        when(paymentRepository.save(any(Payment.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        Payment result = paymentService.addPayment(this.order, "VOUCHER", paymentData);
+
+        assertEquals(PaymentStatus.SUCCESS.getValue(), result.getStatus());
+        assertEquals(OrderStatus.SUCCESS.getValue(), this.order.getStatus());
+        verify(paymentRepository, times(1)).save(any(Payment.class));
+    }
+
+    @Test
+    void testAddPaymentVoucherRejectedInvalidCode() {
+        Map<String, String> paymentData = new HashMap<>();
+        paymentData.put("voucherCode", "ESHOP123");
+
+        when(paymentRepository.save(any(Payment.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        Payment result = paymentService.addPayment(this.order, "VOUCHER", paymentData);
+
+        assertEquals(PaymentStatus.REJECTED.getValue(), result.getStatus());
+        assertEquals(OrderStatus.FAILED.getValue(), this.order.getStatus());
+    }
 }
