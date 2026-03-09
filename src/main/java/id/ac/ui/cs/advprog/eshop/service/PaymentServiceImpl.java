@@ -38,12 +38,7 @@ public class PaymentServiceImpl implements PaymentService {
         if (code == null || code.length() != 16 || !code.startsWith("ESHOP")) {
             return false;
         }
-        int digitCount = 0;
-        for (char c : code.toCharArray()) {
-            if (Character.isDigit(c)) {
-                digitCount++;
-            }
-        }
+        long digitCount = code.chars().filter(Character::isDigit).count();
         return digitCount == 8;
     }
 
