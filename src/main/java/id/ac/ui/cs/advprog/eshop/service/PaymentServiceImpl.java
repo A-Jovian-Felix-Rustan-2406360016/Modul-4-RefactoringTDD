@@ -26,13 +26,10 @@ public class PaymentServiceImpl implements PaymentService {
     @Override
     public Payment setStatus(Payment payment, String status) {
         payment.setStatus(status);
-        if (status.equals("SUCCESS")) {
-            payment.getOrder().setStatus("SUCCESS");
-        } else if (status.equals("REJECTED")) {
-            payment.getOrder().setStatus("FAILED");
-        }
+        updateOrderStatus(payment);
         return paymentRepository.save(payment);
     }
+
 
     private void updateOrderStatus(Payment payment) {
         String status = payment.getStatus();
