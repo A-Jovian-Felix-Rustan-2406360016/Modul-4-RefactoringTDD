@@ -20,7 +20,31 @@ public class PaymentServiceImpl implements PaymentService {
     @Override
     public Payment addPayment(Order order, String method, Map<String, String> paymentData) {
         Payment payment = new Payment(UUID.randomUUID().toString(), order, method, paymentData);
+
+        if (method.equals("VOUCHER")) {
+            String voucherCode = paymentData.get("voucherCode");
+            if (isValidVoucher(voucherCode)) {
+                payment.setStatus(PaymentStatus.SUCCESS.getValue());
+            } else {
+                payment.setStatus(PaymentStatus.REJECTED.getValue());
+            }
+        }
+
+        updateOrderStatus(payment);
         return paymentRepository.save(payment);
+    }
+
+    private boolean isValidVoucher(String code) {
+        if (code == null || code.length() != 16 || !code.startsWith("ESHOP")) {
+            return false;
+        }
+        int digitCount = 0;
+        for (char c : code.toCharArray()) {
+            if (Character.isDigit(c)) {
+                digitCount++;
+            }
+        }
+        return digitCount == 8;
     }
 
     @Override
