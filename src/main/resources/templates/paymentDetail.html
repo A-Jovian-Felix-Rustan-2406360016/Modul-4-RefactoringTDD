@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Payment Detail</title>
+</head>
+<body>
+<h1>Payment Detail</h1>
+<hr>
+<div>
+    <p><strong>Payment ID:</strong> <span th:text="${payment.id}"></span></p>
+    <p><strong>Method:</strong> <span th:text="${payment.method}"></span></p>
+    <p><strong>Status:</strong> <span th:text="${payment.status}"></span></p>
+
+    <h3>Order Information</h3>
+    <p><strong>Order ID:</strong> <span th:text="${payment.order.id}"></span></p>
+    <p><strong>Author:</strong> <span th:text="${payment.order.author}"></span></p>
+
+    <h3>Payment Data</h3>
+    <ul>
+        <li th:each="entry : ${payment.paymentData}">
+            <strong th:text="${entry.key}"></strong>: <span th:text="${entry.value}"></span>
+        </li>
+    </ul>
+</div>
+
+<a href="/payment/admin/list">Back to List</a>
+</body>
+</html>

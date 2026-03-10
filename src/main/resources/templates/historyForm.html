@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Find Order History</title>
+</head>
+<body>
+<h1>Check Your Order History</h1>
+<hr>
+<form th:action="@{/order/history}" method="post">
+    <p>Enter your name to see your orders:</p>
+    <input type="text" name="author" placeholder="e.g. Jovian" required>
+    <button type="submit">Search</button>
+</form>
+<br>
+<a href="/order/create">Create New Order</a>
+</body>
+</html>
