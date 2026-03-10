@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head><title>Admin - Payment Detail</title></head>
+<body>
+<h1>Manage Payment</h1>
+<p>Payment ID: <span th:text="${payment.id}"></span></p>
+<p>Current Status: <span th:text="${payment.status}"></span></p>
+
+<form th:action="@{/payment/admin/set-status/{id}(id=${payment.id})}" method="post">
+    <select name="status">
+        <option value="SUCCESS">Accept</option>
+        <option value="REJECTED">Reject</option>
+    </select>
+    <button type="submit">Update Status</button>
+</form>
+</body>
+</html>

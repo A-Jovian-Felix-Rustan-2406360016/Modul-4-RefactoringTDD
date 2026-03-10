@@ -7,31 +7,36 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-
 @Controller
 @RequestMapping("/payment")
 public class PaymentController {
+    @Autowired private PaymentService paymentService;
 
-    @Autowired
-    private PaymentService paymentService;
-
-    @GetMapping("/admin/list")
-    public String adminPaymentListPage(Model model) {
-        List<Payment> payments = paymentService.getAllPayments();
-        model.addAttribute("payments", payments);
-        return "adminPaymentList";
+    @GetMapping("/detail")
+    public String paymentDetailForm() {
+        return "paymentDetailForm";
     }
 
     @GetMapping("/detail/{paymentId}")
-    public String paymentDetailPage(@PathVariable String paymentId, Model model) {
-        Payment payment = paymentService.getPayment(paymentId);
-        model.addAttribute("payment", payment);
+    public String paymentDetail(@PathVariable String paymentId, Model model) {
+        model.addAttribute("payment", paymentService.getPayment(paymentId));
         return "paymentDetail";
     }
 
+    @GetMapping("/admin/list")
+    public String adminPaymentList(Model model) {
+        model.addAttribute("payments", paymentService.getAllPayments());
+        return "adminPaymentList";
+    }
+
+    @GetMapping("/admin/detail/{paymentId}")
+    public String adminPaymentDetail(@PathVariable String paymentId, Model model) {
+        model.addAttribute("payment", paymentService.getPayment(paymentId));
+        return "adminPaymentDetail";
+    }
+
     @PostMapping("/admin/set-status/{paymentId}")
-    public String setStatusPayment(@PathVariable String paymentId, @RequestParam String status) {
+    public String setStatus(@PathVariable String paymentId, @RequestParam String status) {
         Payment payment = paymentService.getPayment(paymentId);
         if (payment != null) {
             paymentService.setStatus(payment, status);
