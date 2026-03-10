@@ -10,7 +10,13 @@ import org.springframework.web.bind.annotation.*;
 @Controller
 @RequestMapping("/payment")
 public class PaymentController {
-    @Autowired private PaymentService paymentService;
+
+    private final PaymentService paymentService;
+
+    @Autowired
+    public PaymentController(PaymentService paymentService) {
+        this.paymentService = paymentService;
+    }
 
     @GetMapping("/detail")
     public String paymentDetailForm() {
