@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Order History Search</title>
+</head>
+<body>
+<h1>Search Order History</h1>
+<form th:action="@{/order/history}" method="post">
+    <label for="author">Your Name:</label>
+    <input type="text" id="author" name="author" required>
+    <button type="submit">Search</button>
+</form>
+</body>
+</html>
