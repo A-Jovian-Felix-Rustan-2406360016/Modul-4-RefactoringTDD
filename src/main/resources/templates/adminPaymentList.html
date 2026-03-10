@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Admin - Payment List</title>
+</head>
+<body>
+<h1>All Payments</h1> <table>
+    <thead>
+    <tr>
+        <th>Payment ID</th>
+        <th>Method</th>
+        <th>Status</th>
+        <th>Action</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="payment : ${payments}">
+        <td th:text="${payment.id}"></td>
+        <td th:text="${payment.method}"></td>
+        <td th:text="${payment.status}"></td>
+        <td>
+            <form th:action="@{/payment/admin/set-status/{id}(id=${payment.id})}" method="post">
+                <select name="status">
+                    <option value="SUCCESS">SUCCESS</option>
+                    <option value="REJECTED">REJECTED</option>
+                </select>
+                <button type="submit">Update</button>
+            </form>
+        </td>
+    </tr>
+    </tbody>
+</table>
+</body>
+</html>
