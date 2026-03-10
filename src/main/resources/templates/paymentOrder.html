@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Pay Order</title>
+</head>
+<body>
+<h1>Pay for Order</h1>
+<hr>
+<div>
+    <p><strong>Order ID:</strong> <span th:text="${order.id}"></span></p>
+    <p><strong>Author:</strong> <span th:text="${order.author}"></span></p>
+    <p><strong>Total Items:</strong> <span th:text="${order.products.size()}"></span></p>
+</div>
+
+<form th:action="@{/order/pay/{id}(id=${order.id})}" method="post">
+    <h3>Choose Payment Method</h3>
+    <select name="method" id="paymentMethod" onchange="toggleFields()">
+        <option value="VOUCHER">Voucher</option>
+        <option value="BANK_TRANSFER">Bank Transfer</option>
+    </select>
+
+    <div id="voucherFields">
+        <p>Voucher Code (16 chars, starts with ESHOP, 8 digits):</p>
+        <input type="text" name="paymentData['voucherCode']" placeholder="ESHOP123456789012">
+    </div>
+
+    <div id="bankFields" style="display:none;">
+        <p>Bank Name:</p>
+        <input type="text" name="paymentData['bankName']" placeholder="BCA/Mandiri/BNI">
+        <p>Reference Code:</p>
+        <input type="text" name="paymentData['referenceCode']" placeholder="REF-12345">
+    </div>
+
+    <br><br>
+    <button type="submit">Confirm Payment</button>
+</form>
+
+<script>
+    function toggleFields() {
+        const method = document.getElementById('paymentMethod').value;
+        document.getElementById('voucherFields').style.display = method === 'VOUCHER' ? 'block' : 'none';
+        document.getElementById('bankFields').style.display = method === 'BANK_TRANSFER' ? 'block' : 'none';
+    }
+</script>
+</body>
+</html>
