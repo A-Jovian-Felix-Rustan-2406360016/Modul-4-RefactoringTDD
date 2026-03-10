@@ -17,3 +17,33 @@ Reflection Module 3 :
 2. Penerapan prinsip SOLID membuat struktur kode menjadi lebih modular dan fleksibel sehingga gampang untuk dimaintain jangka panjang. Salah satu manfaatnya, dengan pemisahan tanggung jawab yang jelas antar kelas, setiap komponen memiliki peran spesifik dan tidak saling tumpang tindih. Dampaknya, ketika terjadi perubahan kebutuhan atau penambahan fitur, kita tidak perlu mengubah banyak bagian sekaligus. Risiko kesalahan atau error juga lebih kecil karena area perubahan menjadi terisolasi dan terkontrol. Desain seperti ini membuat proses pengembangan terasa lebih stabil, terutama ketika proyek mulai bertambah kompleks. Contohnya, setelah CarController tidak lagi inherit dari ProductController, maka semua perubahan pada fitur produk tidak akan mempengaruhi fitur mobil dan sebaliknya. Lalu, dengan penggunaan interface pada ProductRepository dan CarRepository, saya bisa mengganti mekanisme penyimpanan data, misalnya dari in memory menjadi database, tanpa mengubah layer lain. Pendekatan ini membuat sistem menjadi lebih fleksibel terhadap perubahan implementasi.
 
 3. Sebaliknya, tanpa penerapan SOLID, kode akan cenderung memiliki struktur yang sulit dikembangkan. Ketika dependency tidak dikelola dengan baik dan bergantung secara langsung pada concrete class, perubahan kecil akan menimbulkan efek yang domino sehingga bisa mempengaruhi banyak bagian sistem. Sebagai contoh, controller yang langsung bergantung pada implementasi konkret repository tanpa menggunakan interface, saat ada perubahan maka saya harus ubah banyak kode sekaligus yang meningkatkan potensi kesalahan dan memperlambat proses pengembangan. Dalam jangka panjang, desain tanpa prinsip SOLID akan membuat sistem semakin kompleks dan sulit dipahami. Testing juga menjadi lebih sulit karena komponen saling bergantung erat dan tidak dapat diuji secara terisolasi. Akibatnya, biaya maintenance meningkat karena setiap perubahan membutuhkan effort lebih besar dibandingkan jika sistem sejak awal dirancang dengan struktur yang modular dan abstraksi.
+
+Reflection Module 4 (1) : 
+1. Penerapan alur Test Driven Development (TDD) dalam latihan ini terbukti cukup membantu dalam menjaga kualitas dan stabilitas kode, terutama ketika terjadi perubahan pada logika bisnis yang cukup kompleks. Sesuai prinsip Percival, TDD berperan sebagai safety net yang memungkinkan kita untuk mendeteksi kesalahan lebih awal. Sebagai contoh, ketika terjadi perubahan pada alur pembayaran, kegagalan pada OrderControllerTest langsung menunjukkan bahwa terdapat perilaku sistem yang tidak lagi sesuai dengan ekspektasi. Tanpa adanya pengujian yang dibuat terlebih dahulu, perubahan seperti ini berpotensi menimbulkan kesalahan yang baru disadari pada tahap akhir. Ke depannya, saya perlu lebih fokus menulis tes yang menguji behaviour dari sistem, bukan struktur internalnya, serta mengikuti siklus TDD secara lebih disiplin.
+
+2. Untuk prinsip F.I.R.S.T, unit test yang telah saya buat sebagian besar sudah memenuhi kriteria tersebut, berikut penjelasannya :
+- Fast : Tes dapat dijalankan dengan cepat karena pengujian difokuskan pada unit tertentu dan menggunakan pendekatan seperti MockMvc, sehingga tidak memerlukan proses yang berat
+- Independent : Setiap test case dirancang untuk menguji skenario yang spesifik dan tidak bergantung pada hasil dari tes lainnya. Dengan demikian, setiap tes dapat dijalankan secara terpisah tanpa memengaruhi atau dipengaruhi oleh tes lain.
+- Repeatable : Tes dapat dijalankan di berbagai lingkungan dengan hasil yang konsisten, baik pada lingkungan lokal maupun pada sistem CI.
+- Self validating : Penggunaan assertions pada setiap tes memungkinkan hasil pengujian dievaluasi secara otomatis sebagai pass atau fail.
+- Timely : Tes ditulis seiring dengan proses pengembangan dan perbaikan kode. Pendekatan ini membantu memastikan bahwa setiap perubahan pada kode langsung divalidasi melalui pengujian yang relevan.
+
+Reflection Module 4 (2) : 
+Saya mereview kode punya teman sekelompok saya yaitu Aaron Nathanael Suhaendi (2406437073)
+1. Menurut saya, kode yang dibuat oleh teman saya secara keseluruhan sudah sangat baik. Logika bisnis untuk fitur Order dan Payment sudah berjalan sesuai dengan requirement, dan struktur kodenya cukup rapi. Namun, masih ada beberapa aspek yang kurang, terutama dalam hal maintainability (keterbacaan dan kemudahan pemeliharaan kode) dan penerapan best practices di Spring Boot (seperti cara melakukan dependency injection dan efisiensi dalam penulisan unit test).
+
+2. Saya berkontribusi dengan melakukan Code Review pada Pull Request partner saya. Saya menganalisis kodenya (dibantu dengan SonarCloud), menemukan beberapa code smell, lalu memberikan komentar langsung (inline comments) di GitHub yang berisi penjelasan mengenai dampak code smell tersebut terhadap aplikasi. Setelah itu, saya membuat branch baru (refactor/[NPM]) dan mengeksekusi langsung perbaikan-perbaikan (refactoring) pada kodenya agar lebih bersih dan memenuhi standar Clean Code.
+
+3. Saya menemukan 5 jenis code smell utama pada kode partner saya:
+- Unused Private Field: Terdapat deklarasi variabel orderList di OrderController yang sama sekali tidak dipakai.
+- Field Injection: Penggunaan anotasi @Autowired langsung pada field/variable di OrderServiceImpl dan PaymentServiceImpl.
+- Unnecessary Exception Declaration: Deklarasi throws Exception pada method-method di Functional Test yang sebenarnya tidak melempar checked exception.
+- Duplicated Tests: Ada 3 buah unit test di PaymentTest yang mengecek hal yang hampir sama persis (hanya berbeda string input-nya).
+- Lambda Contains Multiple Invocations: Pemanggilan lebih dari satu method di dalam blok lambda assertThrows(...) pada OrderServiceImplTest yang bisa memicu false positive.
+
+4.Langkah refactoring yang saya jalankan untuk memperbaiki code smells di atas adalah:
+- Safe Delete: Menghapus baris kode orderList yang tidak terpakai agar memori lebih bersih dan tidak membingungkan developer lain.
+- Constructor Injection: Menghapus @Autowired pada field, menambahkan keyword final, dan membuat constructor untuk menginisialisasi repository (membuat kode lebih mudah di-mock saat testing manual).
+- Remove Declaration: Menghapus tulisan throws Exception pada signature method di file-file Functional Test.
+- Parameterized Test: Menggabungkan 3 unit test yang redundan menjadi 1 method ringkas dengan menggunakan anotasi @ParameterizedTest dan @ValueSource.
+- Extract Variable: Memindahkan pemanggilan method persiapan (seperti pemanggilan .getId() atau .getValue()) ke luar blok lambda assertThrows, sehingga di dalam lambda hanya murni tersisa 1 baris method utama yang memang diekspektasikan untuk menghasilkan error.
