@@ -89,4 +89,18 @@ class PaymentTest {
         Payment payment = new Payment("pay-1", this.order, "VOUCHER", this.paymentData);
         assertThrows(IllegalArgumentException.class, () -> payment.setStatus("BOOM"));
     }
+
+    @Test
+    void testCreatePaymentNullMethod() {
+        assertThrows(IllegalArgumentException.class, () -> {
+            new Payment("pay-1", this.order, null, this.paymentData);
+        });
+    }
+
+    @Test
+    void testCreatePaymentNullPaymentData() {
+        assertThrows(IllegalArgumentException.class, () -> {
+            new Payment("pay-1", this.order, "VOUCHER", null);
+        });
+    }
 }

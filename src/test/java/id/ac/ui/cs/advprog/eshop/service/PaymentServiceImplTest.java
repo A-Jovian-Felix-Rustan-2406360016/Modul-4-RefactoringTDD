@@ -27,10 +27,6 @@ class PaymentServiceImplTest {
     @Mock
     PaymentRepository paymentRepository;
 
-    @Mock
-    OrderService orderService;
-
-    List<Payment> payments;
     Order order;
 
     @BeforeEach
@@ -42,71 +38,22 @@ class PaymentServiceImplTest {
 
         this.order = new Order("13652556-012a-4c07-b546-54eb1396d79b",
                 products, 1708560000L, "Safira Sudrajat");
-
-        this.payments = new ArrayList<>();
-    }
-
-    @Test
-    void testSetStatusSuccessUpdateOrder() {
-        Map<String, String> paymentData = new HashMap<>();
-        paymentData.put("voucherCode", "ESHOP1234ABC5678");
-        Payment payment = new Payment("pay-1", this.order, "VOUCHER", paymentData);
-
-        when(paymentRepository.save(any(Payment.class))).thenAnswer(invocation -> invocation.getArgument(0));
-
-        Payment result = paymentService.setStatus(payment, PaymentStatus.SUCCESS.getValue());
-
-        assertEquals(PaymentStatus.SUCCESS.getValue(), result.getStatus());
-        assertEquals(OrderStatus.SUCCESS.getValue(), this.order.getStatus());
-    }
-
-    @Test
-    void testSetStatusRejectedUpdateOrderFailed() {
-        Map<String, String> paymentData = new HashMap<>();
-        paymentData.put("voucherCode", "ESHOP1234ABC5678");
-        Payment payment = new Payment("pay-1", this.order, "VOUCHER", paymentData);
-
-        when(paymentRepository.save(any(Payment.class))).thenAnswer(invocation -> invocation.getArgument(0));
-
-        Payment result = paymentService.setStatus(payment, PaymentStatus.REJECTED.getValue());
-
-        assertEquals(PaymentStatus.REJECTED.getValue(), result.getStatus());
-        assertEquals(OrderStatus.FAILED.getValue(), this.order.getStatus());
     }
 
     @Test
     void testAddPaymentVoucherSuccess() {
-        Map<String, String> paymentData = new HashMap<>();
-        paymentData.put("voucherCode", "ESHOP1234ABC5678");
-
+        Map<String, String> paymentData = Map.of("voucherCode", "ESHOP1234ABC5678");
         when(paymentRepository.save(any(Payment.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
         Payment result = paymentService.addPayment(this.order, "VOUCHER", paymentData);
 
         assertEquals(PaymentStatus.SUCCESS.getValue(), result.getStatus());
         assertEquals(OrderStatus.SUCCESS.getValue(), this.order.getStatus());
-        verify(paymentRepository, times(1)).save(any(Payment.class));
-    }
-
-    @Test
-    void testAddPaymentVoucherRejectedInvalidCode() {
-        Map<String, String> paymentData = new HashMap<>();
-        paymentData.put("voucherCode", "ESHOP123");
-
-        when(paymentRepository.save(any(Payment.class))).thenAnswer(invocation -> invocation.getArgument(0));
-
-        Payment result = paymentService.addPayment(this.order, "VOUCHER", paymentData);
-
-        assertEquals(PaymentStatus.REJECTED.getValue(), result.getStatus());
-        assertEquals(OrderStatus.FAILED.getValue(), this.order.getStatus());
     }
 
     @Test
     void testAddPaymentBankTransferSuccess() {
-        Map<String, String> paymentData = new HashMap<>();
-        paymentData.put("bankName", "BCA");
-        paymentData.put("referenceCode", "REF12345");
-
+        Map<String, String> paymentData = Map.of("bankName", "BCA", "referenceCode", "REF123");
         when(paymentRepository.save(any(Payment.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
         Payment result = paymentService.addPayment(this.order, "BANK_TRANSFER", paymentData);
@@ -116,16 +63,100 @@ class PaymentServiceImplTest {
     }
 
     @Test
-    void testAddPaymentBankTransferRejectedEmptyData() {
-        Map<String, String> paymentData = new HashMap<>();
-        paymentData.put("bankName", "");
-        paymentData.put("referenceCode", "REF12345");
-
+    void testAddPaymentUnknownMethodShouldReturnRejected() {
+        Map<String, String> paymentData = Map.of("someKey", "someValue");
         when(paymentRepository.save(any(Payment.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-        Payment result = paymentService.addPayment(this.order, "BANK_TRANSFER", paymentData);
+        Payment result = paymentService.addPayment(this.order, "GOPAY", paymentData);
 
         assertEquals(PaymentStatus.REJECTED.getValue(), result.getStatus());
         assertEquals(OrderStatus.FAILED.getValue(), this.order.getStatus());
+    }
+
+    @Test
+    void testIsValidVoucherFailScenarios() {
+        when(paymentRepository.save(any(Payment.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        Map<String, String> dataNull = new HashMap<>();
+        dataNull.put("voucherCode", null);
+        assertEquals(PaymentStatus.REJECTED.getValue(), paymentService.addPayment(this.order, "VOUCHER", dataNull).getStatus());
+
+        assertEquals(PaymentStatus.REJECTED.getValue(), paymentService.addPayment(this.order, "VOUCHER", Map.of("voucherCode", "ESHOP123")).getStatus());
+
+        assertEquals(PaymentStatus.REJECTED.getValue(), paymentService.addPayment(this.order, "VOUCHER", Map.of("voucherCode", "ABCDE12345678910")).getStatus());
+
+        assertEquals(PaymentStatus.REJECTED.getValue(), paymentService.addPayment(this.order, "VOUCHER", Map.of("voucherCode", "ESHOP1234567AAAA")).getStatus());
+    }
+
+    @Test
+    void testIsValidBankTransferFailScenarios() {
+        when(paymentRepository.save(any(Payment.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        Map<String, String> dataBankNull = new HashMap<>();
+        dataBankNull.put("bankName", null);
+        dataBankNull.put("referenceCode", "REF");
+        assertEquals(PaymentStatus.REJECTED.getValue(), paymentService.addPayment(this.order, "BANK_TRANSFER", dataBankNull).getStatus());
+
+        assertEquals(PaymentStatus.REJECTED.getValue(), paymentService.addPayment(this.order, "BANK_TRANSFER", Map.of("bankName", "  ", "referenceCode", "REF")).getStatus());
+
+        Map<String, String> dataRefNull = new HashMap<>();
+        dataRefNull.put("bankName", "BCA");
+        dataRefNull.put("referenceCode", null);
+        assertEquals(PaymentStatus.REJECTED.getValue(), paymentService.addPayment(this.order, "BANK_TRANSFER", dataRefNull).getStatus());
+
+        assertEquals(PaymentStatus.REJECTED.getValue(), paymentService.addPayment(this.order, "BANK_TRANSFER", Map.of("bankName", "BCA", "referenceCode", "")).getStatus());
+    }
+
+    @Test
+    void testSetStatusSuccessUpdatesOrder() {
+        Payment payment = new Payment("pay-1", this.order, "VOUCHER", Map.of("voucherCode", "ESHOP1234ABC5678"));
+        when(paymentRepository.save(any(Payment.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        paymentService.setStatus(payment, PaymentStatus.SUCCESS.getValue());
+
+        assertEquals(PaymentStatus.SUCCESS.getValue(), payment.getStatus());
+        assertEquals(OrderStatus.SUCCESS.getValue(), this.order.getStatus());
+    }
+
+    @Test
+    void testSetStatusRejectedUpdatesOrder() {
+        Payment payment = new Payment("pay-1", this.order, "VOUCHER", Map.of("voucherCode", "ESHOP1234ABC5678"));
+        when(paymentRepository.save(any(Payment.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        paymentService.setStatus(payment, PaymentStatus.REJECTED.getValue());
+
+        assertEquals(PaymentStatus.REJECTED.getValue(), payment.getStatus());
+        assertEquals(OrderStatus.FAILED.getValue(), this.order.getStatus());
+    }
+
+    @Test
+    void testSetStatusWaitingDoesNotChangeOrder() {
+        Payment payment = new Payment("pay-1", this.order, "VOUCHER", Map.of("voucherCode", "ESHOP1234ABC5678"));
+        this.order.setStatus(OrderStatus.WAITING_PAYMENT.getValue());
+        when(paymentRepository.save(any(Payment.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        paymentService.setStatus(payment, PaymentStatus.WAITING_PAYMENT.getValue());
+
+        assertEquals(PaymentStatus.WAITING_PAYMENT.getValue(), payment.getStatus());
+        assertEquals(OrderStatus.WAITING_PAYMENT.getValue(), this.order.getStatus());
+    }
+
+    @Test
+    void testGetPayment() {
+        Payment payment = new Payment("pay-1", this.order, "VOUCHER", Map.of("voucherCode", "ESHOP1234ABC5678"));
+        when(paymentRepository.findById("pay-1")).thenReturn(payment);
+
+        Payment result = paymentService.getPayment("pay-1");
+        assertNotNull(result);
+        assertEquals("pay-1", result.getId());
+    }
+
+    @Test
+    void testGetAllPayments() {
+        List<Payment> payments = List.of(new Payment("pay-1", this.order, "VOUCHER", Map.of("voucherCode", "ESHOP1234ABC5678")));
+        when(paymentRepository.findAll()).thenReturn(payments);
+
+        List<Payment> result = paymentService.getAllPayments();
+        assertEquals(1, result.size());
     }
 }

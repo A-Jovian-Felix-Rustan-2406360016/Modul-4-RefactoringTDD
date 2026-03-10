@@ -1,5 +1,6 @@
 package id.ac.ui.cs.advprog.eshop.controller;
 
+import id.ac.ui.cs.advprog.eshop.enums.PaymentStatus;
 import id.ac.ui.cs.advprog.eshop.model.Order;
 import id.ac.ui.cs.advprog.eshop.model.Payment;
 import id.ac.ui.cs.advprog.eshop.model.Product;
@@ -57,14 +58,24 @@ public class OrderController {
         return "paymentOrder";
     }
 
-    @PostMapping("/pay/{orderId}")
-    public String payOrder(@PathVariable String orderId,
+    @PostMapping("/pay/{id}")
+    public String payOrder(@PathVariable String id,
                            @RequestParam String method,
                            @RequestParam Map<String, String> paymentData,
                            Model model) {
-        Order order = orderService.findById(orderId);
+
+        Order order = orderService.findById(id);
         Payment payment = paymentService.addPayment(order, method, paymentData);
-        model.addAttribute("paymentId", payment.getId());
+
+        if (payment.getStatus().equals("REJECTED")) {
+            List<Order> orders = orderService.findAllByAuthor(order.getAuthor());
+            model.addAttribute("orders", orders);
+            model.addAttribute("authorName", order.getAuthor());
+
+            return "orderHistory";
+        }
+
+        model.addAttribute("payment", payment);
         return "paymentSuccess";
     }
 }

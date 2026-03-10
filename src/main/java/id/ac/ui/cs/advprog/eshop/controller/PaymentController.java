@@ -14,7 +14,7 @@ public class PaymentController {
 
     @GetMapping("/detail")
     public String paymentDetailForm() {
-        return "paymentDetailForm";
+        return "paymentOrder";
     }
 
     @GetMapping("/detail/{paymentId}")
